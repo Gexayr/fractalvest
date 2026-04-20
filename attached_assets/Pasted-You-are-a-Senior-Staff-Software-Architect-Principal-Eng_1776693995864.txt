@@ -1,0 +1,252 @@
+You are a Senior Staff Software Architect + Principal Engineer.
+
+Your task is to design and generate a complete production-ready MVP system using:
+
+Backend: Go (microservices architecture)
+Frontend: Next.js (modern, premium UI/UX)
+Database: PostgreSQL
+Messaging: Kafka (or Redis Streams if simpler fallback is needed)
+Cache: Redis
+Containerization: Docker + docker-compose
+
+The goal is to produce a system that can be started with:
+
+docker-compose up -d
+
+and runs end-to-end without manual setup.
+
+🧠 PRODUCT DESCRIPTION
+
+We are building a tokenized fractional investment platform (real estate MVP).
+
+Users can:
+
+register/login
+view investment assets (real estate properties)
+buy fractional shares of assets
+track portfolio performance
+see valuation updates
+receive notifications about transactions
+
+Assets are split into shares, users own fractions, and earn returns.
+
+🧱 ARCHITECTURE REQUIREMENTS
+
+Design a microservices-based backend in Go with clean separation of concerns and event-driven architecture.
+
+Required backend services:
+1. API Gateway
+Single entry point
+Auth middleware
+Rate limiting
+Routes requests to services
+2. Auth Service (Go)
+JWT authentication
+refresh tokens
+user registration/login
+role-based access (user/admin)
+3. User Service
+user profiles
+KYC status (basic MVP field)
+preferences
+4. Asset Service
+manage investment assets (real estate properties)
+total shares, available shares
+price per share
+asset valuation history
+5. Transaction Service (CORE ENGINE)
+buy/sell shares
+order creation
+transaction execution
+balance validation
+emits events
+6. Portfolio Service (READ MODEL)
+user holdings
+portfolio valuation
+profit/loss calculation
+optimized read DB (CQRS pattern)
+7. Notification Service
+email notifications
+event-driven
+triggered via Kafka
+8. Event / Outbox Service (or shared module)
+Kafka event publishing
+ensures no lost events
+audit-safe architecture
+🗄️ DATABASE REQUIREMENTS (PostgreSQL)
+
+You MUST generate:
+
+1. Full schema:
+users
+user_profiles
+assets
+asset_valuation_history
+orders
+transactions
+ledger_entries
+user_holdings
+wallet (optional MVP)
+audit_logs
+outbox_events
+2. Migrations:
+versioned SQL migrations
+reversible where possible
+3. Seed data:
+1 admin user
+3 demo users
+5 real estate assets
+sample transactions
+sample holdings
+🧠 DATA RULES
+UUID primary keys everywhere
+no direct balance mutation without ledger
+ledger_entries is source of truth
+all financial actions must be traceable
+use decimal(18,6) for money
+🎨 FRONTEND (Next.js)
+
+Build a premium modern UI, similar to fintech SaaS like:
+
+Stripe Dashboard
+Robinhood
+Coinbase
+Requirements:
+UI/UX
+smooth scrolling animations
+glassmorphism + dark mode
+modern typography
+responsive design
+micro-interactions (hover, transitions)
+loading skeletons
+charts (portfolio performance)
+Pages:
+Landing page (marketing)
+Auth pages (login/register)
+Dashboard
+Assets list
+Asset detail page
+Portfolio page
+Transactions history
+📊 FRONTEND FEATURES
+real-time portfolio updates
+asset cards with animations
+buy/sell modal
+charts (profit, valuation history)
+smooth page transitions
+
+Use:
+
+Next.js App Router
+TailwindCSS
+Framer Motion
+Recharts or similar
+⚙️ BACKEND REQUIREMENTS (GO)
+Architecture:
+
+Use clean architecture / DDD:
+
+/services
+  /auth
+  /user
+  /asset
+  /transaction
+  /portfolio
+  /notification
+
+/shared
+  /database
+  /logger
+  /events
+  /middleware
+Each service must include:
+REST API (Gin or Fiber)
+PostgreSQL integration
+service layer + repository layer
+DTO validation
+structured logging
+config via env
+📡 EVENT SYSTEM
+
+Use Kafka (preferred) or fallback to Redis Streams.
+
+Events:
+
+UserCreated
+AssetCreated
+OrderCreated
+TransactionExecuted
+PortfolioUpdated
+
+All services must be event-driven where applicable.
+
+🐳 DOCKER REQUIREMENTS
+
+You MUST generate:
+
+docker-compose.yml with:
+postgres
+redis
+kafka + zookeeper (or redpanda alternative)
+all go microservices
+frontend
+nginx (optional reverse proxy)
+Requirement:
+
+System must run with:
+
+docker-compose up -d
+
+without manual configuration.
+
+🔐 SECURITY REQUIREMENTS
+JWT authentication
+password hashing (bcrypt)
+request validation
+rate limiting on API gateway
+secure headers
+CORS configured
+📦 OUTPUT REQUIREMENTS
+
+You must generate:
+
+1. Backend:
+full Go microservices codebase
+folder structure
+main.go for each service
+repositories + services + handlers
+DB migrations
+seeders
+2. Frontend:
+complete Next.js project
+UI components
+pages
+state management (simple Zustand or React Query)
+3. Infrastructure:
+docker-compose.yml
+Dockerfiles for each service
+env.example files
+🧠 QUALITY EXPECTATION
+
+This must be:
+
+production-level architecture
+scalable design
+clean code
+modular and extensible
+realistic for startup MVP
+
+Avoid:
+
+pseudo code
+toy examples
+incomplete architecture
+🚀 FINAL GOAL
+
+A fully working MVP system:
+
+frontend + backend + DB + event system
+runs locally via docker-compose
+ready to extend into real SaaS product
+
+If something is unclear, make reasonable engineering assumptions instead of asking questions.

@@ -1,22 +1,35 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: FractionalVest Investment Platform API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication operations
+  - name: users
+    description: User operations
+  - name: assets
+    description: Investment asset operations
+  - name: transactions
+    description: Transaction operations
+  - name: portfolio
+    description: Portfolio operations
+  - name: dashboard
+    description: Dashboard summary operations
+  - name: notifications
+    description: Notification operations
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +37,488 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # Auth
+  /auth/register:
+    post:
+      operationId: register
+      tags: [auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "201":
+          description: User registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Email already in use
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login with email and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Logout user
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current authenticated user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # Users
+  /users/{id}:
+    get:
+      operationId: getUser
+      tags: [users]
+      summary: Get user by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateUser
+      tags: [users]
+      summary: Update user profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserRequest"
+      responses:
+        "200":
+          description: User updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  # Assets
+  /assets:
+    get:
+      operationId: listAssets
+      tags: [assets]
+      summary: List all investment assets
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, coming_soon, fully_funded, closed]
+        - name: type
+          in: query
+          schema:
+            type: string
+        - name: minPrice
+          in: query
+          schema:
+            type: number
+        - name: maxPrice
+          in: query
+          schema:
+            type: number
+      responses:
+        "200":
+          description: List of assets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Asset"
+    post:
+      operationId: createAsset
+      tags: [assets]
+      summary: Create a new investment asset (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAssetRequest"
+      responses:
+        "201":
+          description: Asset created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Asset"
+
+  /assets/featured:
+    get:
+      operationId: getFeaturedAssets
+      tags: [assets]
+      summary: Get featured/top assets for landing page
+      responses:
+        "200":
+          description: Featured assets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Asset"
+
+  /assets/{id}:
+    get:
+      operationId: getAsset
+      tags: [assets]
+      summary: Get asset detail by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Asset found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AssetDetail"
+        "404":
+          description: Asset not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /assets/{id}/valuation-history:
+    get:
+      operationId: getAssetValuationHistory
+      tags: [assets]
+      summary: Get historical valuation data for an asset
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Valuation history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ValuationPoint"
+
+  # Transactions
+  /transactions:
+    get:
+      operationId: listTransactions
+      tags: [transactions]
+      summary: List user transactions
+      parameters:
+        - name: userId
+          in: query
+          schema:
+            type: string
+        - name: assetId
+          in: query
+          schema:
+            type: string
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [buy, sell]
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        "200":
+          description: List of transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Transaction"
+    post:
+      operationId: createTransaction
+      tags: [transactions]
+      summary: Create a buy or sell transaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTransactionRequest"
+      responses:
+        "201":
+          description: Transaction created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transaction"
+        "400":
+          description: Insufficient shares or funds
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /transactions/{id}:
+    get:
+      operationId: getTransaction
+      tags: [transactions]
+      summary: Get a transaction by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Transaction found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transaction"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # Portfolio
+  /portfolio/{userId}:
+    get:
+      operationId: getPortfolio
+      tags: [portfolio]
+      summary: Get user portfolio with holdings
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User portfolio
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Portfolio"
+
+  /portfolio/{userId}/performance:
+    get:
+      operationId: portfolioPerformanceHistory
+      tags: [portfolio]
+      summary: Get portfolio performance over time
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [1w, 1m, 3m, 6m, 1y, all]
+            default: 1m
+      responses:
+        "200":
+          description: Portfolio performance data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PerformancePoint"
+
+  # Dashboard
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Get dashboard summary stats for the authenticated user
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  /dashboard/market-overview:
+    get:
+      operationId: getMarketOverview
+      tags: [dashboard]
+      summary: Get market overview stats across all assets
+      responses:
+        "200":
+          description: Market overview
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MarketOverview"
+
+  /dashboard/recent-activity:
+    get:
+      operationId: getRecentActivity
+      tags: [dashboard]
+      summary: Get recent transaction activity for authenticated user
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        "200":
+          description: Recent activity list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityItem"
+
+  # Notifications
+  /notifications:
+    get:
+      operationId: listNotifications
+      tags: [notifications]
+      summary: List notifications for authenticated user
+      responses:
+        "200":
+          description: List of notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Notification"
+
+  /notifications/{id}/read:
+    patch:
+      operationId: markNotificationRead
+      tags: [notifications]
+      summary: Mark a notification as read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Notification marked as read
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notification"
+
+  /notifications/read-all:
+    patch:
+      operationId: markAllNotificationsRead
+      tags: [notifications]
+      summary: Mark all notifications as read
+      responses:
+        "200":
+          description: All notifications marked as read
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +529,447 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+
+    # Auth
+    RegisterRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+        firstName:
+          type: string
+        lastName:
+          type: string
+      required:
+        - email
+        - password
+        - firstName
+        - lastName
+
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+      required:
+        - email
+        - password
+
+    AuthResponse:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+        token:
+          type: string
+      required:
+        - user
+        - token
+
+    # User
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        role:
+          type: string
+          enum: [user, admin]
+        kycStatus:
+          type: string
+          enum: [pending, approved, rejected]
+        walletBalance:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - email
+        - firstName
+        - lastName
+        - role
+        - kycStatus
+        - walletBalance
+        - createdAt
+
+    UpdateUserRequest:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        kycStatus:
+          type: string
+          enum: [pending, approved, rejected]
+
+    # Assets
+    Asset:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        location:
+          type: string
+        propertyType:
+          type: string
+        totalShares:
+          type: integer
+        availableShares:
+          type: integer
+        pricePerShare:
+          type: number
+        totalValuation:
+          type: number
+        expectedReturn:
+          type: number
+        status:
+          type: string
+          enum: [active, coming_soon, fully_funded, closed]
+        imageUrl:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - description
+        - location
+        - propertyType
+        - totalShares
+        - availableShares
+        - pricePerShare
+        - totalValuation
+        - expectedReturn
+        - status
+        - createdAt
+
+    AssetDetail:
+      allOf:
+        - $ref: "#/components/schemas/Asset"
+        - type: object
+          properties:
+            amenities:
+              type: array
+              items:
+                type: string
+            documents:
+              type: array
+              items:
+                type: string
+            highlights:
+              type: array
+              items:
+                type: string
+
+    CreateAssetRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        location:
+          type: string
+        propertyType:
+          type: string
+        totalShares:
+          type: integer
+        pricePerShare:
+          type: number
+        expectedReturn:
+          type: number
+        imageUrl:
+          type: string
+      required:
+        - name
+        - description
+        - location
+        - propertyType
+        - totalShares
+        - pricePerShare
+        - expectedReturn
+
+    ValuationPoint:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date-time
+        valuation:
+          type: number
+        pricePerShare:
+          type: number
+      required:
+        - date
+        - valuation
+        - pricePerShare
+
+    # Transactions
+    Transaction:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        assetId:
+          type: string
+        assetName:
+          type: string
+        type:
+          type: string
+          enum: [buy, sell]
+        shares:
+          type: integer
+        pricePerShare:
+          type: number
+        totalAmount:
+          type: number
+        status:
+          type: string
+          enum: [pending, completed, failed, cancelled]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - userId
+        - assetId
+        - assetName
+        - type
+        - shares
+        - pricePerShare
+        - totalAmount
+        - status
+        - createdAt
+
+    CreateTransactionRequest:
+      type: object
+      properties:
+        assetId:
+          type: string
+        type:
+          type: string
+          enum: [buy, sell]
+        shares:
+          type: integer
+          minimum: 1
+      required:
+        - assetId
+        - type
+        - shares
+
+    # Portfolio
+    Holding:
+      type: object
+      properties:
+        assetId:
+          type: string
+        assetName:
+          type: string
+        assetLocation:
+          type: string
+        assetImageUrl:
+          type: ["string", "null"]
+        shares:
+          type: integer
+        purchaseValue:
+          type: number
+        currentValue:
+          type: number
+        profitLoss:
+          type: number
+        profitLossPercent:
+          type: number
+        pricePerShare:
+          type: number
+      required:
+        - assetId
+        - assetName
+        - assetLocation
+        - shares
+        - purchaseValue
+        - currentValue
+        - profitLoss
+        - profitLossPercent
+        - pricePerShare
+
+    Portfolio:
+      type: object
+      properties:
+        userId:
+          type: string
+        totalInvested:
+          type: number
+        currentValue:
+          type: number
+        totalProfitLoss:
+          type: number
+        totalProfitLossPercent:
+          type: number
+        holdings:
+          type: array
+          items:
+            $ref: "#/components/schemas/Holding"
+        walletBalance:
+          type: number
+      required:
+        - userId
+        - totalInvested
+        - currentValue
+        - totalProfitLoss
+        - totalProfitLossPercent
+        - holdings
+        - walletBalance
+
+    PerformancePoint:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date-time
+        value:
+          type: number
+        invested:
+          type: number
+      required:
+        - date
+        - value
+        - invested
+
+    # Dashboard
+    DashboardSummary:
+      type: object
+      properties:
+        totalInvested:
+          type: number
+        portfolioValue:
+          type: number
+        totalReturn:
+          type: number
+        totalReturnPercent:
+          type: number
+        totalAssets:
+          type: integer
+        walletBalance:
+          type: number
+        activeHoldings:
+          type: integer
+      required:
+        - totalInvested
+        - portfolioValue
+        - totalReturn
+        - totalReturnPercent
+        - totalAssets
+        - walletBalance
+        - activeHoldings
+
+    MarketOverview:
+      type: object
+      properties:
+        totalAssets:
+          type: integer
+        totalMarketCap:
+          type: number
+        avgExpectedReturn:
+          type: number
+        activeInvestors:
+          type: integer
+        newAssetsThisMonth:
+          type: integer
+      required:
+        - totalAssets
+        - totalMarketCap
+        - avgExpectedReturn
+        - activeInvestors
+        - newAssetsThisMonth
+
+    ActivityItem:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [buy, sell, deposit, withdrawal]
+        assetName:
+          type: ["string", "null"]
+        amount:
+          type: number
+        shares:
+          type: ["integer", "null"]
+        status:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - type
+        - amount
+        - status
+        - createdAt
+
+    # Notifications
+    Notification:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        type:
+          type: string
+          enum: [transaction, valuation_update, system, kyc]
+        title:
+          type: string
+        message:
+          type: string
+        read:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - userId
+        - type
+        - title
+        - message
+        - read
+        - createdAt
