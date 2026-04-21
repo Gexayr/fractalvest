@@ -1,0 +1,18 @@
+# ---- Builder ----
+FROM node:24-slim AS builder
+RUN corepack enable
+WORKDIR /app
+
+COPY . .
+RUN pnpm install
+RUN pnpm --filter @workspace/api-server run build
+
+# ---- Runtime ----
+FROM node:24-alpine AS runtime
+WORKDIR /app
+ENV NODE_ENV=production
+
+COPY --from=builder /app/artifacts/api-server/dist ./dist
+
+EXPOSE 8080
+CMD ["node", "--enable-source-maps", "./dist/index.mjs"]

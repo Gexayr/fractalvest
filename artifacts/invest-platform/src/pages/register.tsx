@@ -1,4 +1,4 @@
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -19,8 +19,14 @@ const formSchema = z.object({
 
 export default function Register() {
   const registerMutation = useRegister();
-  const { login } = useAuth();
+  const { login, user, isLoading } = useAuth();
   const { toast } = useToast();
+  const [, navigate] = useLocation();
+
+  if (!isLoading && user) {
+    navigate("/dashboard");
+    return null;
+  }
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -32,6 +38,7 @@ export default function Register() {
       onSuccess: (response) => {
         login(response.token, response.user);
         toast({ title: "Account created", description: "Welcome to FractionalVest." });
+        navigate("/dashboard");
       },
       onError: (error) => {
         toast({ title: "Error", description: error.error?.error || "Failed to register.", variant: "destructive" });

@@ -1,0 +1,8 @@
+FROM node:24-slim
+RUN corepack enable
+WORKDIR /app
+
+COPY . .
+RUN pnpm install
+
+CMD ["pnpm", "--filter", "@workspace/db", "run", "push-force"]

@@ -23,7 +23,7 @@ export default function Dashboard() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Overview</h1>
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Overview</h1>
         <p className="text-muted-foreground mt-1">Your portfolio snapshot and recent market activity.</p>
       </div>
       

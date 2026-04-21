@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -18,8 +18,14 @@ const formSchema = z.object({
 
 export default function Login() {
   const loginMutation = useLogin();
-  const { login } = useAuth();
+  const { login, user, isLoading } = useAuth();
   const { toast } = useToast();
+  const [, navigate] = useLocation();
+
+  if (!isLoading && user) {
+    navigate("/dashboard");
+    return null;
+  }
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -31,6 +37,7 @@ export default function Login() {
       onSuccess: (response) => {
         login(response.token, response.user);
         toast({ title: "Welcome back", description: "Successfully logged in." });
+        navigate("/dashboard");
       },
       onError: (error) => {
         toast({ title: "Error", description: error.error?.error || "Failed to log in.", variant: "destructive" });

@@ -110,7 +110,7 @@ export default function AssetDetail() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 lg:order-first space-y-6">
           {asset.imageUrl && (
             <div className="aspect-video rounded-lg overflow-hidden border border-border">
               <img src={asset.imageUrl} alt={asset.name} className="w-full h-full object-cover" />
@@ -118,7 +118,7 @@ export default function AssetDetail() {
           )}
 
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">{asset.name}</h1>
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{asset.name}</h1>
             <div className="flex items-center gap-2 text-muted-foreground mt-2">
               <MapPin className="h-4 w-4" />
               <span>{asset.location}</span>
@@ -176,8 +176,8 @@ export default function AssetDetail() {
           )}
         </div>
 
-        <div className="space-y-4">
-          <Card className="bg-card sticky top-4">
+        <div className="order-first lg:order-last space-y-4">
+          <Card className="bg-card lg:sticky lg:top-4">
             <CardHeader><CardTitle className="text-base">Investment Details</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-3 text-sm">
