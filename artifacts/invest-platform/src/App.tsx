@@ -17,6 +17,7 @@ import PortfolioPage from "@/pages/portfolio";
 import TransactionsPage from "@/pages/transactions";
 import NotificationsPage from "@/pages/notifications";
 import SettingsPage from "@/pages/settings";
+import AdminPage from "@/pages/admin";
 import NotFoundPage from "@/pages/not-found";
 
 setAuthTokenGetter(() => localStorage.getItem("fv_token"));
@@ -29,6 +30,27 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+function AdminRoute({ component: Component }: { component: React.ComponentType }) {
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="animate-spin text-muted-foreground h-6 w-6" />
+      </div>
+    );
+  }
+
+  if (!user) return <Redirect to="/login" />;
+  if (user.role !== "admin") return <Redirect to="/dashboard" />;
+
+  return (
+    <AppLayout>
+      <Component />
+    </AppLayout>
+  );
+}
 
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   const { user, isLoading } = useAuth();
@@ -66,6 +88,7 @@ function Router() {
       <Route path="/transactions"><ProtectedRoute component={TransactionsPage} /></Route>
       <Route path="/notifications"><ProtectedRoute component={NotificationsPage} /></Route>
       <Route path="/settings"><ProtectedRoute component={SettingsPage} /></Route>
+      <Route path="/admin"><AdminRoute component={AdminPage} /></Route>
 
       <Route component={NotFoundPage} />
     </Switch>

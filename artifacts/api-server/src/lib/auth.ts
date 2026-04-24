@@ -41,6 +41,16 @@ export function requireAuth(req: Request, res: Response, next: NextFunction): vo
   }
 }
 
+export function requireAdmin(req: Request, res: Response, next: NextFunction): void {
+  requireAuth(req, res, () => {
+    if (req.user?.role !== "admin") {
+      res.status(403).json({ error: "Forbidden: admin access required" });
+      return;
+    }
+    next();
+  });
+}
+
 export function optionalAuth(req: Request, _res: Response, next: NextFunction): void {
   const authHeader = req.headers.authorization;
   if (authHeader?.startsWith("Bearer ")) {

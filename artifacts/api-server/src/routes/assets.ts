@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db, assetsTable, assetValuationHistoryTable } from "@workspace/db";
-import { eq, and, gte, lte, or } from "drizzle-orm";
-import { requireAuth } from "../lib/auth";
+import { eq, and, gte, lte } from "drizzle-orm";
+import { requireAdmin } from "../lib/auth";
 
 const router = Router();
 
@@ -64,7 +64,7 @@ router.get("/assets/:id/valuation-history", async (req, res): Promise<void> => {
   })));
 });
 
-router.post("/assets", requireAuth, async (req, res): Promise<void> => {
+router.post("/assets", requireAdmin, async (req, res): Promise<void> => {
   const { name, description, location, propertyType, totalShares, pricePerShare, expectedReturn, imageUrl } = req.body;
 
   if (!name || !description || !location || !propertyType || !totalShares || !pricePerShare || !expectedReturn) {
@@ -92,6 +92,44 @@ router.post("/assets", requireAuth, async (req, res): Promise<void> => {
   }).returning();
 
   res.status(201).json(formatAsset(asset));
+});
+
+router.patch("/assets/:id", requireAdmin, async (req, res): Promise<void> => {
+  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const { name, description, location, propertyType, totalShares, pricePerShare, expectedReturn, imageUrl, status } = req.body;
+
+  const updates: Partial<typeof assetsTable.$inferInsert> = {};
+  if (name !== undefined) updates.name = name;
+  if (description !== undefined) updates.description = description;
+  if (location !== undefined) updates.location = location;
+  if (propertyType !== undefined) updates.propertyType = propertyType;
+  if (totalShares !== undefined) updates.totalShares = parseInt(totalShares);
+  if (pricePerShare !== undefined) updates.pricePerShare = String(pricePerShare);
+  if (expectedReturn !== undefined) updates.expectedReturn = String(expectedReturn);
+  if (imageUrl !== undefined) updates.imageUrl = imageUrl;
+  if (status !== undefined) updates.status = status;
+
+  if (Object.keys(updates).length === 0) {
+    res.status(400).json({ error: "No fields to update" });
+    return;
+  }
+
+  const [updated] = await db.update(assetsTable).set(updates).where(eq(assetsTable.id, raw)).returning();
+  if (!updated) {
+    res.status(404).json({ error: "Asset not found" });
+    return;
+  }
+  res.json(formatAsset(updated));
+});
+
+router.delete("/assets/:id", requireAdmin, async (req, res): Promise<void> => {
+  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const [deleted] = await db.delete(assetsTable).where(eq(assetsTable.id, raw)).returning();
+  if (!deleted) {
+    res.status(404).json({ error: "Asset not found" });
+    return;
+  }
+  res.json({ message: "Asset deleted successfully" });
 });
 
 function formatAsset(asset: typeof assetsTable.$inferSelect) {
