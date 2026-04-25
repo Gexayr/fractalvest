@@ -3,9 +3,11 @@ services:
   # ── PostgreSQL ─────────────────────────────────────────────────────────────
   db:
     image: postgres:16-alpine
+    ports:
+      - "54321:5432"
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-fractionalvest}
+      POSTGRES_DB: ${POSTGRES_DB:-fractionalvest}claude
       POSTGRES_USER: ${POSTGRES_USER:-fvuser}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fvpassword}
     volumes:

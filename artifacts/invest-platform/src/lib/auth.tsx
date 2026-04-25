@@ -51,9 +51,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               headers: { Authorization: `Bearer ${storedToken}` },
             });
             if (res.ok) {
-              const freshUser = await res.json();
+              const { token: freshToken, ...freshUser } = await res.json();
               setUser(freshUser);
               localStorage.setItem("fv_user", JSON.stringify(freshUser));
+              if (freshToken) {
+                setToken(freshToken);
+                localStorage.setItem("fv_token", freshToken);
+              }
             } else {
               logoutFn();
             }

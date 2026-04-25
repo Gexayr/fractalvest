@@ -54,7 +54,7 @@ export default function AdminPage() {
       toast({ title: "Validation error", description: "All required fields must be filled.", variant: "destructive" });
       return;
     }
-    createAssetMutation.mutate({
+    createAssetMutation.mutate({ data: {
       name: form.name,
       description: form.description,
       location: form.location,
@@ -63,14 +63,19 @@ export default function AdminPage() {
       pricePerShare: parseFloat(form.pricePerShare),
       expectedReturn: parseFloat(form.expectedReturn),
       imageUrl: form.imageUrl || undefined,
-    }, {
+    }}, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getListAssetsQueryKey({}) });
         setDialogOpen(false);
         setForm(emptyForm);
         toast({ title: "Asset created", description: `"${form.name}" has been added.` });
       },
-      onError: () => toast({ title: "Error", description: "Failed to create asset.", variant: "destructive" }),
+      onError: (err: unknown) => {
+        const msg = (err as { data?: { error?: string } })?.data?.error
+          ?? (err as Error)?.message
+          ?? "Failed to create asset.";
+        toast({ title: "Error", description: msg, variant: "destructive" });
+      },
     });
   };
 
@@ -81,11 +86,15 @@ export default function AdminPage() {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!res.ok) throw new Error();
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body?.error ?? `HTTP ${res.status}`);
+      }
       queryClient.invalidateQueries({ queryKey: getListAssetsQueryKey({}) });
       toast({ title: "Asset deleted", description: `"${name}" has been removed.` });
-    } catch {
-      toast({ title: "Error", description: "Failed to delete asset.", variant: "destructive" });
+    } catch (err: unknown) {
+      const msg = (err as Error)?.message ?? "Failed to delete asset.";
+      toast({ title: "Error", description: msg, variant: "destructive" });
     } finally {
       setDeletingId(null);
     }

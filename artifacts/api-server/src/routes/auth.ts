@@ -112,7 +112,11 @@ router.get("/auth/me", requireAuth, async (req, res, next): Promise<void> => {
       return;
     }
 
+    // Re-issue token with current DB role so stale tokens are refreshed on every app load
+    const token = signToken({ userId: user.id, role: user.role });
+
     res.json({
+      token,
       id: user.id,
       email: user.email,
       firstName: user.firstName,
