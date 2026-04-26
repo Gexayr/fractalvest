@@ -1,7 +1,7 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { ArrowRight, Building2, LineChart, ShieldCheck, Wallet } from "lucide-react";
+import { ArrowRight, Building2, LineChart, Wallet, PlayCircle } from "lucide-react";
 
 export default function Home() {
   return (
@@ -41,15 +41,21 @@ export default function Home() {
             >
               Access institutional-grade real estate investments for a fraction of the cost. Build a diversified portfolio of premium properties.
             </motion.p>
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="flex items-center gap-4"
+              className="flex flex-wrap items-center gap-4"
             >
               <Link href="/register">
                 <Button size="lg" className="h-14 px-8 text-lg">
                   View Properties <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+              <Link href="/demo">
+                <Button size="lg" variant="outline" className="h-14 px-8 text-lg border-border text-muted-foreground hover:text-foreground hover:border-primary/50">
+                  <PlayCircle className="mr-2 h-5 w-5" />
+                  Try Demo
                 </Button>
               </Link>
             </motion.div>

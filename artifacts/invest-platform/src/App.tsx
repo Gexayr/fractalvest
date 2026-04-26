@@ -19,6 +19,7 @@ import NotificationsPage from "@/pages/notifications";
 import SettingsPage from "@/pages/settings";
 import AdminPage from "@/pages/admin";
 import NotFoundPage from "@/pages/not-found";
+import DemoPage from "@/pages/demo";
 
 setAuthTokenGetter(() => localStorage.getItem("fv_token"));
 
@@ -80,6 +81,7 @@ function Router() {
       <Route path="/" component={HomPage} />
       <Route path="/login" component={LoginPage} />
       <Route path="/register" component={RegisterPage} />
+      <Route path="/demo" component={DemoPage} />
 
       <Route path="/dashboard"><ProtectedRoute component={DashboardPage} /></Route>
       <Route path="/assets"><ProtectedRoute component={AssetsPage} /></Route>
