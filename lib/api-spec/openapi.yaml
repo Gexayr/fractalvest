@@ -95,6 +95,37 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /auth/google:
+    post:
+      operationId: googleAuth
+      tags: [auth]
+      summary: Authenticate with Google
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GoogleAuthRequest"
+      responses:
+        "200":
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Invalid credential
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /auth/logout:
     post:
       operationId: logout
@@ -576,6 +607,14 @@ components:
       required:
         - email
         - password
+
+    GoogleAuthRequest:
+      type: object
+      properties:
+        credential:
+          type: string
+      required:
+        - credential
 
     AuthResponse:
       type: object

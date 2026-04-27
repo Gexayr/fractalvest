@@ -8,6 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useRegister } from "@workspace/api-client-react";
 import { useAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
+import { GoogleAuthButton } from "@/components/google-auth-button";
 import { Loader2 } from "lucide-react";
 
 const formSchema = z.object({
@@ -111,6 +112,17 @@ export default function Register() {
           </form>
         </Form>
         
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-border" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+          </div>
+        </div>
+
+        <GoogleAuthButton />
+
         <div className="mt-8 text-center text-sm text-muted-foreground">
           Already have an account? <Link href="/login" className="text-primary hover:underline">Log in</Link>
         </div>

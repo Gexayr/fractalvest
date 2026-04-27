@@ -9,6 +9,8 @@ RUN pnpm install
 # PORT satisfies the vite.config.ts startup check (not used in build output)
 ENV PORT=8081
 ENV BASE_PATH=/
+ARG VITE_GOOGLE_CLIENT_ID
+ENV VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID
 RUN pnpm --filter @workspace/invest-platform run build
 
 # ---- Runtime ----

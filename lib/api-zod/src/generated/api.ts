@@ -49,6 +49,27 @@ export const LoginResponse = zod.object({
 });
 
 /**
+ * @summary Authenticate with Google
+ */
+export const GoogleAuthBody = zod.object({
+  credential: zod.string(),
+});
+
+export const GoogleAuthResponse = zod.object({
+  user: zod.object({
+    id: zod.string(),
+    email: zod.string(),
+    firstName: zod.string(),
+    lastName: zod.string(),
+    role: zod.enum(["user", "admin"]),
+    kycStatus: zod.enum(["pending", "approved", "rejected"]),
+    walletBalance: zod.number(),
+    createdAt: zod.coerce.date(),
+  }),
+  token: zod.string(),
+});
+
+/**
  * @summary Logout user
  */
 export const LogoutResponse = zod.object({

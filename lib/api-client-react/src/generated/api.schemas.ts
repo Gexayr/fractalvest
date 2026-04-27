@@ -30,6 +30,10 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface GoogleAuthRequest {
+  credential: string;
+}
+
 export type UserRole = (typeof UserRole)[keyof typeof UserRole];
 
 export const UserRole = {
