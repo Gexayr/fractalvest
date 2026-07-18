@@ -441,3 +441,66 @@ export const MarkNotificationReadResponse = zod.object({
 export const MarkAllNotificationsReadResponse = zod.object({
   message: zod.string(),
 });
+
+/**
+ * @summary List crypto deposits for the authenticated user
+ */
+export const ListDepositsResponseItem = zod.object({
+  id: zod.string(),
+  amount: zod.number(),
+  currency: zod.string(),
+  payCurrency: zod.string().nullish(),
+  status: zod.enum([
+    "waiting",
+    "confirming",
+    "confirmed",
+    "sending",
+    "partially_paid",
+    "finished",
+    "failed",
+    "refunded",
+    "expired",
+  ]),
+  invoiceUrl: zod.string(),
+  createdAt: zod.coerce.date(),
+});
+export const ListDepositsResponse = zod.array(ListDepositsResponseItem);
+
+/**
+ * @summary Create a NOWPayments invoice to deposit funds into the wallet
+ */
+export const createDepositBodyAmountMin = 10;
+
+export const CreateDepositBody = zod.object({
+  amount: zod
+    .number()
+    .min(createDepositBodyAmountMin)
+    .describe("Deposit amount in USD"),
+});
+
+/**
+ * @summary Get a deposit by ID
+ */
+export const GetDepositParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const GetDepositResponse = zod.object({
+  id: zod.string(),
+  amount: zod.number(),
+  currency: zod.string(),
+  payCurrency: zod.string().nullish(),
+  status: zod.enum([
+    "waiting",
+    "confirming",
+    "confirmed",
+    "sending",
+    "partially_paid",
+    "finished",
+    "failed",
+    "refunded",
+    "expired",
+  ]),
+  invoiceUrl: zod.string(),
+  createdAt: zod.coerce.date(),
+});

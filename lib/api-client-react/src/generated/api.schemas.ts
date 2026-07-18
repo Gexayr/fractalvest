@@ -175,6 +175,39 @@ export interface CreateTransactionRequest {
   shares: number;
 }
 
+export type DepositStatus = (typeof DepositStatus)[keyof typeof DepositStatus];
+
+export const DepositStatus = {
+  waiting: "waiting",
+  confirming: "confirming",
+  confirmed: "confirmed",
+  sending: "sending",
+  partially_paid: "partially_paid",
+  finished: "finished",
+  failed: "failed",
+  refunded: "refunded",
+  expired: "expired",
+} as const;
+
+export interface Deposit {
+  id: string;
+  amount: number;
+  currency: string;
+  /** @nullable */
+  payCurrency?: string | null;
+  status: DepositStatus;
+  invoiceUrl: string;
+  createdAt: string;
+}
+
+export interface CreateDepositRequest {
+  /**
+   * Deposit amount in USD
+   * @minimum 10
+   */
+  amount: number;
+}
+
 export interface Holding {
   assetId: string;
   assetName: string;

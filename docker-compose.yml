@@ -43,6 +43,10 @@ services:
       SESSION_SECRET: ${SESSION_SECRET:-change-this-secret-in-production}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       LOG_LEVEL: ${LOG_LEVEL:-info}
+      NOWPAYMENTS_API_KEY: ${NOWPAYMENTS_API_KEY:-}
+      NOWPAYMENTS_IPN_SECRET_KEY: ${NOWPAYMENTS_IPN_SECRET_KEY:-}
+      NOWPAYMENTS_SANDBOX: ${NOWPAYMENTS_SANDBOX:-false}
+      APP_BASE_URL: ${APP_BASE_URL:-}
     depends_on:
       db:
         condition: service_healthy

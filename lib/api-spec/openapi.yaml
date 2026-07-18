@@ -23,6 +23,8 @@ tags:
     description: Dashboard summary operations
   - name: notifications
     description: Notification operations
+  - name: payments
+    description: Crypto deposit operations (NOWPayments)
 
 paths:
   /healthz:
@@ -550,6 +552,76 @@ paths:
               schema:
                 $ref: "#/components/schemas/MessageResponse"
 
+  # Payments
+  /payments/deposits:
+    get:
+      operationId: listDeposits
+      tags: [payments]
+      summary: List crypto deposits for the authenticated user
+      responses:
+        "200":
+          description: List of deposits
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Deposit"
+    post:
+      operationId: createDeposit
+      tags: [payments]
+      summary: Create a NOWPayments invoice to deposit funds into the wallet
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateDepositRequest"
+      responses:
+        "201":
+          description: Deposit invoice created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Deposit"
+        "400":
+          description: Invalid amount
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "502":
+          description: Payment provider unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /payments/deposits/{id}:
+    get:
+      operationId: getDeposit
+      tags: [payments]
+      summary: Get a deposit by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Deposit found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Deposit"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -832,6 +904,44 @@ components:
         - assetId
         - type
         - shares
+
+    # Payments
+    Deposit:
+      type: object
+      properties:
+        id:
+          type: string
+        amount:
+          type: number
+        currency:
+          type: string
+        payCurrency:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [waiting, confirming, confirmed, sending, partially_paid, finished, failed, refunded, expired]
+        invoiceUrl:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - amount
+        - currency
+        - status
+        - invoiceUrl
+        - createdAt
+
+    CreateDepositRequest:
+      type: object
+      properties:
+        amount:
+          type: number
+          minimum: 10
+          description: Deposit amount in USD
+      required:
+        - amount
 
     # Portfolio
     Holding:

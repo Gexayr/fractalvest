@@ -18,6 +18,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (token: string, user: User) => void;
   logout: () => void;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -36,6 +37,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLocation("/login");
   };
 
+  const fetchMe = async (currentToken: string): Promise<boolean> => {
+    try {
+      const res = await fetch("/api/auth/me", {
+        headers: { Authorization: `Bearer ${currentToken}` },
+      });
+      if (res.ok) {
+        const { token: freshToken, ...freshUser } = await res.json();
+        setUser(freshUser);
+        localStorage.setItem("fv_user", JSON.stringify(freshUser));
+        if (freshToken) {
+          setToken(freshToken);
+          localStorage.setItem("fv_token", freshToken);
+        }
+        return true;
+      }
+      return false;
+    } catch {
+      // keep the stored user if network fails
+      return true;
+    }
+  };
+
   useEffect(() => {
     const initAuth = async () => {
       try {
@@ -46,24 +69,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setToken(storedToken);
           setUser(JSON.parse(storedUser));
 
-          try {
-            const res = await fetch("/api/auth/me", {
-              headers: { Authorization: `Bearer ${storedToken}` },
-            });
-            if (res.ok) {
-              const { token: freshToken, ...freshUser } = await res.json();
-              setUser(freshUser);
-              localStorage.setItem("fv_user", JSON.stringify(freshUser));
-              if (freshToken) {
-                setToken(freshToken);
-                localStorage.setItem("fv_token", freshToken);
-              }
-            } else {
-              logoutFn();
-            }
-          } catch {
-            // keep the stored user if network fails
-          }
+          const ok = await fetchMe(storedToken);
+          if (!ok) logoutFn();
         }
       } catch (error) {
         // ignore
@@ -75,6 +82,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     initAuth();
   }, []);
 
+  const refreshUser = async () => {
+    const currentToken = localStorage.getItem("fv_token");
+    if (!currentToken) return;
+    await fetchMe(currentToken);
+  };
+
   const login = (newToken: string, newUser: User) => {
     setToken(newToken);
     setUser(newUser);
@@ -83,7 +96,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, logout: logoutFn }}>
+    <AuthContext.Provider value={{ user, token, isLoading, login, logout: logoutFn, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

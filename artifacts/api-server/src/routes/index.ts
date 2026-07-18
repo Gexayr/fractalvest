@@ -7,6 +7,7 @@ import transactionsRouter from "./transactions";
 import portfolioRouter from "./portfolio";
 import dashboardRouter from "./dashboard";
 import notificationsRouter from "./notifications";
+import paymentsRouter from "./payments";
 
 const router: IRouter = Router();
 
@@ -18,5 +19,6 @@ router.use(transactionsRouter);
 router.use(portfolioRouter);
 router.use(dashboardRouter);
 router.use(notificationsRouter);
+router.use(paymentsRouter);
 
 export default router;
