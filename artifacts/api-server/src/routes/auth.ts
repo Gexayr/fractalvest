@@ -37,7 +37,6 @@ router.post("/auth/register", async (req, res, next): Promise<void> => {
       lastName,
       role: "user",
       kycStatus: "pending",
-      walletBalance: "10000.000000",
     }).returning();
 
     const token = signToken({ userId: user.id, role: user.role });
@@ -141,7 +140,6 @@ router.post("/auth/google", async (req, res, next): Promise<void> => {
           lastName: family_name || "",
           role: "user",
           kycStatus: "pending",
-          walletBalance: "10000.000000",
         }).returning())[0];
       }
     }

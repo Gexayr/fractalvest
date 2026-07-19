@@ -14,7 +14,7 @@ export const usersTable = pgTable("users", {
   lastName: text("last_name").notNull(),
   role: userRoleEnum("role").notNull().default("user"),
   kycStatus: kycStatusEnum("kyc_status").notNull().default("pending"),
-  walletBalance: decimal("wallet_balance", { precision: 18, scale: 6 }).notNull().default("10000.000000"),
+  walletBalance: decimal("wallet_balance", { precision: 18, scale: 6 }).notNull().default("0.000000"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });
