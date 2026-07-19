@@ -135,6 +135,9 @@ export const UpdateUserResponse = zod.object({
 /**
  * @summary List all investment assets
  */
+export const listAssetsQueryLimitDefault = 12;
+export const listAssetsQueryOffsetDefault = 0;
+
 export const ListAssetsQueryParams = zod.object({
   status: zod
     .enum(["active", "coming_soon", "fully_funded", "closed"])
@@ -142,6 +145,8 @@ export const ListAssetsQueryParams = zod.object({
   type: zod.coerce.string().optional(),
   minPrice: zod.coerce.number().optional(),
   maxPrice: zod.coerce.number().optional(),
+  limit: zod.coerce.number().default(listAssetsQueryLimitDefault),
+  offset: zod.coerce.number().default(listAssetsQueryOffsetDefault),
 });
 
 export const ListAssetsResponseItem = zod.object({

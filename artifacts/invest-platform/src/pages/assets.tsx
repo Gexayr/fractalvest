@@ -1,15 +1,53 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
-import { useListAssets, getListAssetsQueryKey } from "@workspace/api-client-react";
+import { listAssets, type Asset } from "@workspace/api-client-react";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, MapPin } from "lucide-react";
 
+const PAGE_SIZE = 12;
+
 export default function Assets() {
-  const { data: assets, isLoading } = useListAssets({}, {
-    query: { queryKey: getListAssetsQueryKey({}) }
-  });
+  const [assets, setAssets] = useState<Asset[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const loadingMoreRef = useRef(false);
+
+  useEffect(() => {
+    listAssets({ limit: PAGE_SIZE, offset: 0 })
+      .then((page) => {
+        setAssets(page);
+        setHasMore(page.length === PAGE_SIZE);
+      })
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver((entries) => {
+      if (!entries[0].isIntersecting || loadingMoreRef.current || !hasMore) return;
+
+      loadingMoreRef.current = true;
+      setIsLoadingMore(true);
+      listAssets({ limit: PAGE_SIZE, offset: assets.length })
+        .then((page) => {
+          setAssets((prev) => [...prev, ...page]);
+          setHasMore(page.length === PAGE_SIZE);
+        })
+        .finally(() => {
+          loadingMoreRef.current = false;
+          setIsLoadingMore(false);
+        });
+    }, { rootMargin: "200px" });
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [assets.length, hasMore]);
 
   return (
     <div className="space-y-8">
@@ -70,6 +108,12 @@ export default function Assets() {
         </div>
       ) : (
         <div className="text-center py-24 text-muted-foreground">No assets found.</div>
+      )}
+
+      {!isLoading && hasMore && (
+        <div ref={sentinelRef} className="flex items-center justify-center py-8">
+          {isLoadingMore && <Loader2 className="animate-spin text-muted-foreground h-6 w-6" />}
+        </div>
       )}
     </div>
   );

@@ -6,7 +6,7 @@ import { requireAdmin } from "../lib/auth";
 const router = Router();
 
 router.get("/assets", async (req, res): Promise<void> => {
-  const { status, type, minPrice, maxPrice } = req.query;
+  const { status, type, minPrice, maxPrice, limit = "12", offset = "0" } = req.query;
   const conditions = [];
 
   if (status && typeof status === "string") {
@@ -22,9 +22,10 @@ router.get("/assets", async (req, res): Promise<void> => {
     conditions.push(lte(assetsTable.pricePerShare, String(maxPrice)));
   }
 
-  const assets = conditions.length > 0
-    ? await db.select().from(assetsTable).where(and(...conditions))
-    : await db.select().from(assetsTable);
+  const assets = await db.select().from(assetsTable)
+    .where(conditions.length > 0 ? and(...conditions) : undefined)
+    .limit(parseInt(limit as string))
+    .offset(parseInt(offset as string));
 
   res.json(assets.map(formatAsset));
 });
